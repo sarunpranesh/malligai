@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { BookOpen, CalendarHeart, ChefHat, ArrowDown } from 'lucide-react';
 import { WHATSAPP_NUMBER, WHATSAPP_MESSAGE } from '../data/menuData';
 import './Hero.css';
 
@@ -44,7 +45,7 @@ export default function Hero() {
           animate="visible"
         >
           <motion.div className="hero-badge" variants={itemVariants}>
-            🌸 Authentic South Indian Dining
+            <ChefHat size={16} className="inline mr-2" style={{ marginRight: '8px' }} /> Authentic South Indian Dining
           </motion.div>
 
           <motion.h1 className="hero-title" variants={itemVariants}>
@@ -62,13 +63,13 @@ export default function Hero() {
               className="hero-btn-primary"
               onClick={() => scrollToSection('#menu')}
             >
-              📖 View Menu
+              <BookOpen size={18} style={{ marginRight: '6px' }} /> View Menu
             </button>
             <button
               className="hero-btn-outline"
               onClick={() => scrollToSection('#booking')}
             >
-              🗓 Book Table
+              <CalendarHeart size={18} style={{ marginRight: '6px' }} /> Book Table
             </button>
             <a
               href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`}
@@ -98,7 +99,7 @@ export default function Hero() {
         </svg>
       </motion.div>
 
-      <div className="hero-bottom-label">↓ Signature Dishes</div>
+      <div className="hero-bottom-label"><ArrowDown size={16} style={{ display: 'inline', marginRight: '4px' }} /> Signature Dishes</div>
     </section>
   );
 }

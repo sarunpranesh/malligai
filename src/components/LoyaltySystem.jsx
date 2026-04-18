@@ -1,25 +1,46 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
+import { loyaltyService } from '../services/loyaltyService';
+import { CakeSlice, TicketPercent, Coffee, Cookie, Gift, RefreshCw, PartyPopper, Check, Lock } from 'lucide-react';
 import './LoyaltySystem.css';
 
 const REWARDS = [
-  { label: 'Free\nDessert', icon: '🍮', code: 'MLG-DESSERT' },
-  { label: '10%\nOFF', icon: '🏷', code: 'MLG-10OFF' },
-  { label: 'Free\nDrink', icon: '☕', code: 'MLG-DRINK' },
-  { label: 'Free\nVada', icon: '🍩', code: 'MLG-VADA' },
-  { label: '15%\nOFF', icon: '🎁', code: 'MLG-15OFF' },
-  { label: 'Try\nAgain', icon: '🔄', code: null },
+  { label: 'Free\nDessert', icon: <CakeSlice size={20} />, code: 'MLG-DESSERT' },
+  { label: '10%\nOFF', icon: <TicketPercent size={20} />, code: 'MLG-10OFF' },
+  { label: 'Free\nDrink', icon: <Coffee size={20} />, code: 'MLG-DRINK' },
+  { label: 'Free\nVada', icon: <Cookie size={20} />, code: 'MLG-VADA' },
+  { label: '15%\nOFF', icon: <Gift size={20} />, code: 'MLG-15OFF' },
+  { label: 'Try\nAgain', icon: <RefreshCw size={20} />, code: null },
 ];
 
-const VISITS = 3;
 const MILESTONE = 4;
-const UNLOCKED = VISITS >= MILESTONE;
 
 export default function LoyaltySystem() {
+  const { user } = useAuth();
   const [spinning, setSpinning] = useState(false);
   const [spunOnce, setSpunOnce] = useState(false);
   const [reward, setReward] = useState(null);
+  const [visits, setVisits] = useState(0);
+  const [loading, setLoading] = useState(true);
   const controls = useAnimation();
+
+  const UNLOCKED = visits >= MILESTONE;
+
+  useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      setVisits(0);
+      return;
+    }
+    loyaltyService.getLoyaltyState(user.id).then(data => {
+      setVisits(data?.visits || 0);
+      setLoading(false);
+    }).catch(err => {
+      console.error(err);
+      setLoading(false);
+    });
+  }, [user]);
 
   const handleSpin = async () => {
     if (spinning || spunOnce || !UNLOCKED) return;
@@ -35,7 +56,7 @@ export default function LoyaltySystem() {
     setReward(REWARDS[winIdx]);
   };
 
-  const progressPct = Math.min((VISITS / MILESTONE) * 100, 100);
+  const progressPct = Math.min((visits / MILESTONE) * 100, 100);
 
   return (
     <section className="loyalty-section" id="loyalty">
@@ -58,13 +79,13 @@ export default function LoyaltySystem() {
             <div className="loyalty-status-card">
               {/* Visit Counter */}
               <div className="loyalty-visits">
-                <div className="loyalty-visits-badge">{VISITS}</div>
+                {loading ? <div className="loyalty-visits-badge">...</div> : <div className="loyalty-visits-badge">{visits}</div>}
                 <div className="loyalty-visits-text">
-                  <h4>You've Visited {VISITS} Times!</h4>
+                  <h4>You've Visited {visits} Times!</h4>
                   <p>
-                    {UNLOCKED
-                      ? '🎉 Spin the wheel to claim your reward!'
-                      : `${MILESTONE - VISITS} more visit${MILESTONE - VISITS > 1 ? 's' : ''} to unlock FREE DESSERT!`}
+                    {!user ? "Sign in to track your visits!" : UNLOCKED
+                      ? <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><PartyPopper size={16} /> Spin the wheel to claim your reward!</span>
+                      : `${MILESTONE - visits} more visit${MILESTONE - visits > 1 ? 's' : ''} to unlock FREE DESSERT!`}
                   </p>
                 </div>
               </div>
@@ -84,15 +105,15 @@ export default function LoyaltySystem() {
                   <span>0 visits</span>
                   <span>1 visit</span>
                   <span>2 visits</span>
-                  <span style={{ color: UNLOCKED ? 'var(--gold)' : undefined }}>
-                    {MILESTONE} visits 🎁
+                  <span style={{ color: UNLOCKED ? 'var(--gold)' : undefined, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {MILESTONE} visits <Gift size={14} />
                   </span>
                 </div>
               </div>
 
               {UNLOCKED && (
-                <div className="loyalty-milestone-text">
-                  🎉 Milestone reached! Spin the wheel to claim your surprise reward!
+                <div className="loyalty-milestone-text" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                  <PartyPopper size={16} /> Milestone reached! Spin the wheel to claim your surprise reward!
                 </div>
               )}
             </div>
@@ -100,13 +121,15 @@ export default function LoyaltySystem() {
             {/* Rewards */}
             <div className="loyalty-rewards">
               {[
-                { icon: '🍮', label: 'Free Dessert', earned: VISITS >= 2 },
-                { icon: '🏷', label: '10% OFF', earned: VISITS >= 3 },
-                { icon: '☕', label: 'Free Drink', earned: UNLOCKED },
+                { icon: <CakeSlice size={16} />, label: 'Free Dessert', earned: visits >= 2 },
+                { icon: <TicketPercent size={16} />, label: '10% OFF', earned: visits >= 3 },
+                { icon: <Coffee size={16} />, label: 'Free Drink', earned: UNLOCKED },
               ].map((r) => (
                 <div key={r.label} className={`loyalty-reward-pill ${r.earned ? 'earned' : 'locked'}`}>
-                  <span className="reward-icon">{r.icon}</span>
-                  {r.earned ? '✓ ' : '🔒 '}{r.label}
+                  <span className="reward-icon" style={{ display: 'flex', alignItems: 'center' }}>{r.icon}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {r.earned ? <Check size={14} /> : <Lock size={14} />} {r.label}
+                  </span>
                 </div>
               ))}
             </div>
@@ -133,7 +156,7 @@ export default function LoyaltySystem() {
                       transform: `rotate(${i * 60 + 30}deg) translateY(-90px) translateX(-30px)`,
                     }}
                   >
-                    <span style={{ fontSize: '1.1rem', display: 'block', marginBottom: 2 }}>{seg.icon}</span>
+                    <span style={{ display: 'flex', justifyContent: 'center', marginBottom: 2 }}>{seg.icon}</span>
                     {seg.label.split('\n').map((l, li) => <span key={li} style={{ display: 'block', fontSize: '0.65rem' }}>{l}</span>)}
                   </div>
                 ))}
@@ -146,19 +169,26 @@ export default function LoyaltySystem() {
                 {spunOnce ? 'CLAIMED!' : spinning ? '...' : 'SPIN'}
               </button>
 
-              {!UNLOCKED && (
+              {!user ? (
                 <div className="spin-locked-overlay">
-                  <span>🔒</span>
-                  <p>Visit {MILESTONE - VISITS} more time{MILESTONE - VISITS > 1 ? 's' : ''} to unlock</p>
+                  <Lock size={28} />
+                  <p>Sign In to unlock rewards</p>
+                </div>
+              ) : !UNLOCKED && (
+                <div className="spin-locked-overlay">
+                  <Lock size={28} />
+                  <p>Visit {MILESTONE - visits} more time{MILESTONE - visits > 1 ? 's' : ''} to unlock</p>
                 </div>
               )}
             </div>
 
             <div style={{ textAlign: 'center' }}>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', maxWidth: 260 }}>
-                {UNLOCKED
-                  ? 'Spin the wheel to reveal your exclusive reward! 🎁'
-                  : `Visit ${MILESTONE} times to unlock the spin wheel and win exciting rewards!`}
+                {UNLOCKED ? (
+                  <span style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}>
+                    Spin the wheel to reveal your exclusive reward! <Gift size={16} />
+                  </span>
+                ) : `Visit ${MILESTONE} times to unlock the spin wheel and win exciting rewards!`}
               </p>
             </div>
           </motion.div>
@@ -187,8 +217,8 @@ export default function LoyaltySystem() {
               <h3>You Won!</h3>
               <p>Congratulations! You've unlocked <strong>{reward.label.replace('\n', ' ')}</strong>. Show this code at the counter to redeem.</p>
               {reward.code && <span className="reward-code">{reward.code}</span>}
-              <button className="reward-close-btn" onClick={() => setReward(null)}>
-                🎉 Awesome, Thanks!
+              <button className="reward-close-btn" onClick={() => setReward(null)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                <PartyPopper size={18} /> Awesome, Thanks!
               </button>
             </motion.div>
           </motion.div>

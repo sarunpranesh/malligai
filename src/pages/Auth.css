@@ -1,0 +1,202 @@
+/* ── AUTH PAGES (Login / Signup) ── */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 24px 64px;
+  background: linear-gradient(160deg, var(--jasmine) 0%, var(--white) 60%, var(--jasmine) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-page::before {
+  content: '';
+  position: absolute;
+  top: -100px; left: -100px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(62,124,89,0.07), transparent 70%);
+  pointer-events: none;
+}
+
+/* ── Container ── */
+.auth-container {
+  display: flex;
+  width: 100%;
+  max-width: 980px;
+  min-height: 580px;
+  background: var(--white);
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+  border: 1px solid rgba(31,77,58,0.06);
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Image Pane ── */
+.auth-image {
+  flex: 1;
+  position: relative;
+  display: none;
+}
+
+@media (min-width: 900px) { .auth-image { display: block; } }
+
+.auth-image img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+
+.auth-image-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(170deg, rgba(31,77,58,0.35) 0%, rgba(10,10,10,0.75) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 52px;
+  color: var(--white);
+}
+
+.auth-image-overlay h2 {
+  font-family: var(--font-serif);
+  font-size: 2.4rem;
+  margin-bottom: 10px;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.auth-image-overlay p {
+  font-size: 1.05rem;
+  opacity: 0.85;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.9);
+}
+
+/* ── Form Pane ── */
+.auth-form-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 52px;
+  background: var(--white);
+}
+
+.auth-form {
+  width: 100%;
+  max-width: 380px;
+}
+
+.auth-header { margin-bottom: 36px; }
+
+.auth-header .section-title {
+  font-size: 2.1rem;
+  margin-bottom: 8px;
+}
+
+/* Error Banner */
+.auth-error {
+  background: #FFF1F0;
+  color: #CC2929;
+  padding: 13px 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 24px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-left: 4px solid #D93B2B;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Form Groups */
+.form-group { margin-bottom: 22px; }
+
+.form-group label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--green-deep);
+  margin-bottom: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid var(--jasmine-dark);
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  color: var(--text-dark);
+  background: var(--white);
+  transition: var(--transition);
+  outline: none;
+}
+
+.form-group input:focus {
+  border-color: var(--green-soft);
+  box-shadow: 0 0 0 4px rgba(107,173,138,0.18);
+  background: white;
+}
+
+.form-group input::placeholder { color: var(--text-light); }
+
+/* Submit */
+.btn-submit {
+  width: 100%;
+  padding: 16px;
+  font-size: 0.95rem;
+  margin-top: 8px;
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s var(--ease);
+  box-shadow: 0 6px 24px rgba(31,77,58,0.35);
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.02em;
+}
+
+.btn-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(31,77,58,0.5);
+}
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Redirect */
+.auth-redirect {
+  text-align: center;
+  margin-top: 28px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.auth-redirect a {
+  color: var(--green-deep);
+  font-weight: 700;
+  text-decoration: none;
+  transition: var(--transition);
+  border-bottom: 1px solid transparent;
+}
+
+.auth-redirect a:hover {
+  color: var(--green-soft);
+  border-bottom-color: var(--green-soft);
+}
+
+/* ── Mobile ── */
+@media (max-width: 640px) {
+  .auth-form-wrapper { padding: 40px 28px; }
+}

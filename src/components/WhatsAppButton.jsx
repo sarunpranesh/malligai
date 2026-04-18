@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Zap } from 'lucide-react';
 import { WHATSAPP_NUMBER, WHATSAPP_MESSAGE } from '../data/menuData';
 import './WhatsAppButton.css';
 
@@ -18,7 +19,7 @@ export default function WhatsAppButton() {
             transition={{ duration: 0.3 }}
             style={{ position: 'relative' }}
           >
-            <strong>Order in 30 seconds 🚀</strong>
+            <strong style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>Order in 30 seconds <Zap size={14} color="var(--gold)" /></strong>
             <span>Tap to chat on WhatsApp</span>
           </motion.div>
         )}

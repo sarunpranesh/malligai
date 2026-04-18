@@ -1,12 +1,11 @@
 import { motion } from 'framer-motion';
-import { todaysSpecials, WHATSAPP_NUMBER } from '../data/menuData';
+import { todaysSpecials } from '../data/menuData';
+import { useCart } from '../context/CartContext';
+import { ShoppingBag } from 'lucide-react';
 import './TodaysSpecials.css';
 
 export default function TodaysSpecials() {
-  const waUrl = (sp) => {
-    const msg = encodeURIComponent(`Hi! I'd like to grab the "${sp.name}" offer (₹${sp.offerPrice}) from Malligai Restaurant 🍛`);
-    return `https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`;
-  };
+  const { addToCart } = useCart();
 
   return (
     <section className="specials-section" id="specials">
@@ -73,9 +72,13 @@ export default function TodaysSpecials() {
                   <span className="special-offer-price">₹{sp.offerPrice}</span>
                   <span className="special-original-price">₹{sp.originalPrice}</span>
                 </div>
-                <a href={waUrl(sp)} target="_blank" rel="noopener noreferrer" className="special-order-btn">
-                  🛒 Grab This Deal
-                </a>
+                <button 
+                  onClick={() => addToCart({ id: sp.id, name: sp.name, price: sp.offerPrice, image: sp.image })} 
+                  className="special-order-btn" 
+                  style={{ border: 'none', cursor: 'pointer', width: '100%' }}
+                >
+                  <ShoppingBag size={16} className="inline mr-2" /> Add to Cart
+                </button>
               </div>
             </motion.div>
           ))}

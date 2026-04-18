@@ -1,38 +1,27 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { menuCategories, menuItems, WHATSAPP_NUMBER } from '../data/menuData';
+import { ShoppingBag, Leaf, Drumstick, Croissant, Coffee, CakeSlice, ArrowRight, Flame, Star } from 'lucide-react';
+import { useCart } from '../context/CartContext';
+import { menuCategories, menuItems } from '../data/menuData';
 import './SmartMenu.css';
 
 const tabIcons = {
-  'Veg': '🥗',
-  'Non-Veg': '🍗',
-  'Tiffin': '🫓',
-  'Beverages': '☕',
-  'Desserts': '🍮',
+  'Veg': <Leaf size={16} />,
+  'Non-Veg': <Drumstick size={16} />,
+  'Tiffin': <Croissant size={16} />,
+  'Beverages': <Coffee size={16} />,
+  'Desserts': <CakeSlice size={16} />,
 };
 
 export default function SmartMenu() {
   const [activeTab, setActiveTab] = useState('Veg');
-  const [cart, setCart] = useState([]);
   const [addedItems, setAddedItems] = useState({});
+  const { addToCart, cartTotal, cartCount, toggleCart } = useCart();
 
   const handleAdd = (item) => {
-    setCart(prev => {
-      const existing = prev.find(c => c.id === item.id);
-      if (existing) return prev.map(c => c.id === item.id ? { ...c, qty: c.qty + 1 } : c);
-      return [...prev, { ...item, qty: 1 }];
-    });
+    addToCart(item);
     setAddedItems(prev => ({ ...prev, [item.id]: true }));
     setTimeout(() => setAddedItems(prev => ({ ...prev, [item.id]: false })), 1200);
-  };
-
-  const cartTotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
-  const cartCount = cart.reduce((sum, i) => sum + i.qty, 0);
-
-  const waMsg = () => {
-    const lines = cart.map(i => `• ${i.name} ×${i.qty} = ₹${i.price * i.qty}`).join('\n');
-    const msg = `Hi! I'd like to order from Malligai Restaurant:\n\n${lines}\n\nTotal: ₹${cartTotal}`;
-    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
   };
 
   return (
@@ -64,7 +53,7 @@ export default function SmartMenu() {
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
           >
-            Browse by category. Add your favourites and order in 30 seconds.
+            Browse by category. Add your favourites and place your order.
           </motion.p>
         </div>
 
@@ -100,11 +89,11 @@ export default function SmartMenu() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.07, duration: 0.35 }}
               >
-                <img className="menu-item-img" src={item.image} alt={item.name} loading="lazy" />
+                <img className="menu-item-img" src={item.image || item.img} alt={item.name} loading="lazy" />
                 <div className="menu-item-info">
                   <div className="menu-item-badges">
-                    {item.hot && <span className="badge badge-hot">🔥 Hot</span>}
-                    {item.popular && <span className="badge badge-popular">⭐ Popular</span>}
+                    {item.hot && <span className="badge badge-hot"><Flame size={12} className="inline mr-1" /> Hot</span>}
+                    {item.popular && <span className="badge badge-popular"><Star size={12} fill="currentColor" className="inline mr-1" /> Popular</span>}
                   </div>
                   <div className="menu-item-name">{item.name}</div>
                   <div className="menu-item-desc">{item.description}</div>
@@ -130,15 +119,18 @@ export default function SmartMenu() {
         {cartCount > 0 && (
           <motion.div
             className="menu-cart-bar"
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 60 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 40 }}
+            exit={{ opacity: 0, y: 60 }}
             transition={{ type: 'spring', stiffness: 300, damping: 26 }}
           >
-            <span>🛒 {cartCount} item{cartCount > 1 ? 's' : ''} · ₹{cartTotal}</span>
-            <a href={waMsg()} target="_blank" rel="noopener noreferrer" className="cart-wa-btn">
-              Order via WhatsApp →
-            </a>
+            <div className="menu-cart-summary">
+              <ShoppingBag size={20} />
+              <span>{cartCount} item{cartCount > 1 ? 's' : ''} · ₹{cartTotal}</span>
+            </div>
+            <button className="cart-wa-btn" onClick={toggleCart} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              View Cart <ArrowRight size={18} />
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,83 +1,118 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { WHATSAPP_NUMBER, WHATSAPP_MESSAGE } from '../data/menuData';
+import { Link, useLocation } from 'react-router-dom';
+import { ShoppingCart, User, LogOut, ChefHat, X } from 'lucide-react';
+import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
 
 const navLinks = [
-  { label: 'Home', href: '#home' },
-  { label: 'Menu', href: '#menu' },
-  { label: 'Book Table', href: '#booking' },
-  { label: 'Rewards', href: '#loyalty' },
-  { label: 'Contact', href: '#footer' },
+  { label: 'Home', href: '#home', isAnchor: true },
+  { label: 'Menu', href: '#menu', isAnchor: true },
+  { label: 'Book Table', href: '#booking', isAnchor: true },
+  { label: 'Rewards', href: '#loyalty', isAnchor: true },
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { cartCount, toggleCart } = useCart();
+  const { user, signOut } = useAuth();
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 60);
+    const handleScroll = () => setScrolled(window.scrollY > 60 || !isHomePage);
     window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Initial check
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isHomePage]);
 
-  const handleNavClick = (href) => {
+  const handleNavClick = (href, isAnchor) => {
     setMobileOpen(false);
-    const el = document.querySelector(href);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    if (isAnchor && isHomePage) {
+      const el = document.querySelector(href);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   return (
     <>
       <motion.nav
-        className={`navbar${scrolled ? ' scrolled' : ''}`}
+        className={`navbar${scrolled || !isHomePage ? ' scrolled' : ''}`}
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
       >
         <div className="navbar-inner">
           {/* Logo */}
-          <a href="#home" className="navbar-logo" onClick={(e) => { e.preventDefault(); handleNavClick('#home'); }}>
-            <div className="navbar-logo-icon">🌸</div>
+          <Link to="/" className="navbar-logo" onClick={() => handleNavClick('#home', true)}>
+            <div className="navbar-logo-icon"><ChefHat size={26} color="var(--gold)" /></div>
             <span className="navbar-logo-text">MALLIGAI</span>
-          </a>
+          </Link>
 
           {/* Links */}
           <ul className="navbar-links">
             {navLinks.map((link) => (
               <li key={link.href}>
-                <a
-                  href={link.href}
-                  onClick={(e) => { e.preventDefault(); handleNavClick(link.href); }}
-                >
-                  {link.label}
-                </a>
+                {link.isAnchor && isHomePage ? (
+                  <a
+                    href={link.href}
+                    onClick={(e) => { e.preventDefault(); handleNavClick(link.href, true); }}
+                  >
+                    {link.label}
+                  </a>
+                ) : (
+                  <Link to={`/${link.isAnchor ? link.href : ''}`}>
+                    {link.label}
+                  </Link>
+                )}
               </li>
             ))}
           </ul>
 
-          {/* CTA */}
-          <div className="navbar-cta">
-            <a
-              href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-nav-cta"
-            >
-              Order Online
-            </a>
-          </div>
+          {/* Right Area (Cart & Auth) */}
+          <div className="navbar-actions">
+            <button className="nav-cart-btn" onClick={toggleCart}>
+              <ShoppingCart size={22} />
+              {cartCount > 0 && (
+                <motion.span 
+                  className="cart-badge"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  key={cartCount}
+                >
+                  {cartCount}
+                </motion.span>
+              )}
+            </button>
 
-          {/* Hamburger */}
-          <button
-            className="navbar-hamburger"
-            onClick={() => setMobileOpen(true)}
-            aria-label="Open menu"
-          >
-            <span className="hamburger-line" />
-            <span className="hamburger-line" />
-            <span className="hamburger-line" />
-          </button>
+            {user ? (
+              <div className="nav-profile">
+                <Link to="/profile" className="nav-profile-icon" style={{ textDecoration: 'none' }}>
+                  {user.user_metadata?.full_name?.charAt(0).toUpperCase() || <User size={18} />}
+                </Link>
+                <button className="nav-logout-btn" onClick={signOut} aria-label="Sign Out">
+                  <LogOut size={18} />
+                </button>
+              </div>
+            ) : (
+              <Link to="/login" className="btn-nav-auth">
+                Sign In
+              </Link>
+            )}
+
+            {/* Hamburger */}
+            <button
+              className="navbar-hamburger"
+              onClick={() => setMobileOpen(true)}
+              aria-label="Open menu"
+            >
+              <span className="hamburger-line" />
+              <span className="hamburger-line" />
+              <span className="hamburger-line" />
+            </button>
+          </div>
         </div>
       </motion.nav>
 
@@ -91,30 +126,51 @@ export default function Navbar() {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            <button className="mobile-close" onClick={() => setMobileOpen(false)}>✕</button>
+            <button className="mobile-close" onClick={() => setMobileOpen(false)}><X size={24} /></button>
             {navLinks.map((link, i) => (
-              <motion.a
+              <motion.div
                 key={link.href}
-                href={link.href}
-                onClick={(e) => { e.preventDefault(); handleNavClick(link.href); }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.08 }}
               >
-                {link.label}
-              </motion.a>
+                {link.isAnchor && isHomePage ? (
+                  <a
+                    href={link.href}
+                    onClick={(e) => { e.preventDefault(); handleNavClick(link.href, true); }}
+                    className="mobile-link"
+                  >
+                    {link.label}
+                  </a>
+                ) : (
+                  <Link to={`/${link.isAnchor ? link.href : ''}`} className="mobile-link" onClick={() => setMobileOpen(false)}>
+                    {link.label}
+                  </Link>
+                )}
+              </motion.div>
             ))}
-            <motion.a
-              href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ marginTop: 24, backgroundColor: 'rgba(255,255,255,0.15)', border: '2px solid rgba(255,255,255,0.4)', borderRadius: '999px', padding: '12px 40px', fontSize: '1rem' }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              Order Online
-            </motion.a>
+
+            {user ? (
+               <motion.button
+                onClick={() => { signOut(); setMobileOpen(false); }}
+                className="mobile-auth-btn"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                Sign Out
+              </motion.button>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <Link to="/login" className="mobile-auth-btn" onClick={() => setMobileOpen(false)}>
+                  Sign In
+                </Link>
+              </motion.div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
